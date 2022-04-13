@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Threading;
 // I will use English because my written Russian is worse than English.
 namespace VeaamMultithreadingSignatureTask
 {
     class Program
     {
-        public static string ByteArrayReadableString(byte[] array)
+        private static string ByteArrayReadableString(byte[] array)
         {
             var readableByteArray = "";
             for (int i = 0; i < array.Length; i++)
@@ -46,16 +47,17 @@ namespace VeaamMultithreadingSignatureTask
                 var chunckBuffer = new byte[chunckSize];
                 var producerConsumerQueue = new ProducerConsumerQueue(Environment.ProcessorCount);
                 int counter = 0;
+                ThreadLocal<SHA256> sha256 = new(() => SHA256.Create());
                 while (fileStream.Read(chunckBuffer, 0, chunckSize) == chunckSize)
                 {
                     
-                    var chunck = new byte[chunckBuffer.Length];
-                    Array.Copy(chunckBuffer, chunck, chunckBuffer.Length);
+                    var chunckCopy = new byte[chunckBuffer.Length];
+                    Array.Copy(chunckBuffer, chunckCopy, chunckBuffer.Length);
                     int counterCopy = counter;
                     producerConsumerQueue.EnqueueItem(() =>
                     {
-                        using var sha256 =  SHA256.Create();
-                        byte[] hashedChunck = sha256.ComputeHash(chunck);
+
+                        byte[] hashedChunck = sha256.Value.ComputeHash(chunckCopy);
                         Console.WriteLine($"{counterCopy} {ByteArrayReadableString(hashedChunck)}");
 
                     });
