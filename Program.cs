@@ -30,7 +30,7 @@ namespace VeaamMultithreadingSignatureTask
 
             if (!File.Exists(filePathStr))
             {
-                Console.WriteLine($"{wrongUsageMessageHead}\n {filePathStr} doesn't exist)");
+                Console.WriteLine($"{wrongUsageMessageHead}\n {filePathStr} doesn't exist");
                 return;
             }
 
@@ -51,11 +51,12 @@ namespace VeaamMultithreadingSignatureTask
                     
                     var chunck = new byte[chunckBuffer.Length];
                     Array.Copy(chunckBuffer, chunck, chunckBuffer.Length);
+                    int counterCopy = counter;
                     producerConsumerQueue.EnqueueItem(() =>
                     {
                         using var sha256 =  SHA256.Create();
                         byte[] hashedChunck = sha256.ComputeHash(chunck);
-                        Console.WriteLine($"{counter} {hashedChunck}");
+                        Console.WriteLine($"{counterCopy} {ByteArrayReadableString(hashedChunck)}");
 
                     });
                     ++counter;
